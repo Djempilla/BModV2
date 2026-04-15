@@ -1,3 +1,4 @@
+using System;
 using BModv2.Patches.Impl;
 using HarmonyLib;
 
@@ -34,6 +35,30 @@ public static class SetupMinigamePatch
     }
 }
 
+// FishingResultsPopupUI реальный автоленд сукааа
+
+[HarmonyPatch(typeof(BaseMenuUI), nameof(BaseMenuUI.Update))]
+public static class FishingResultsPopupUIPatch
+{
+    [HarmonyPostfix]
+    public static void Postfix(BaseMenuUI __instance)
+    {
+
+        if (__instance.name.Contains("FishingResult"))
+        {
+            Plugin.Log.LogInfo("[BMod] Fishing UI updated");
+        }
+        else
+        {
+            return;
+        }
+        FishingResultsPopupUI gui = (FishingResultsPopupUI)__instance;
+        gui.TakeFishPressed();
+    }
+}
+
+
+
 // Патч на UpdateGameStatus — автолэнд когда готово
 [HarmonyPatch(typeof(FishingGaugeMinigameUI), nameof(FishingGaugeMinigameUI.UpdateGameStatus))]
 public static class UpdateGameStatusPatch
@@ -43,6 +68,8 @@ public static class UpdateGameStatusPatch
     [HarmonyPostfix]
     public static void Postfix(FishingGaugeMinigameUI __instance)
     {
+        
+        
         if (EndingTriggered)
             return;
 
@@ -54,6 +81,8 @@ public static class UpdateGameStatusPatch
         // PlayerHooker.thePlayer.ActivateFishingLine(); - throws rod in water args: 2dVector [x:y]
         // PlayerHooker.thePlayer
         __instance.LandButtonPressed();
+        
+        
         __instance.ExitButtonPressed();
     }
 }

@@ -25,11 +25,37 @@ public static class PortalDataCtorPatch
             String commandLine = text.Remove(0, 1);
             if (commandLine.StartsWith("portal"))
             {
-                PortalDataCommand.Execute();
+                if (commandLine.EndsWith("0") || commandLine.EndsWith("1"))
+                {
+                    if (commandLine.EndsWith("0"))
+                    {
+                        PortalDataCommand.Execute(true, 0);   
+                    }
+                    if (commandLine.EndsWith("1"))
+                    {
+                        PortalDataCommand.Execute(false, 1);
+                    }   
+                }
+                else
+                {
+                    PortalDataCommand.Execute(false, 0);
+                }
+                
             }
+            
             if (commandLine.StartsWith("pos"))
             {
                 PositionCommand.Execute();
+            }
+
+            if (commandLine.StartsWith("warp"))
+            {
+                WarpCommand.Execute(false);
+            }
+
+            if (commandLine.StartsWith("spawn"))
+            {
+                WarpCommand.Execute(true);
             }
 
             return false;

@@ -12,7 +12,8 @@ namespace BModv2.Patches.Misc.Commands;
 public static class PortalDataCommand
 {
 
-    public static void Execute()
+    // 0  for entry 1 for target
+    public static void Execute(bool teleport, int target)
     {
         if (Camera.main != null)
         {
@@ -20,6 +21,18 @@ public static class PortalDataCommand
             IReadOnlyList<string>? data = PortalUtils.GetPortalData(v);
 
             if (data != null) Plugin.Log.LogInfo($"Portal [{v.x}|{v.y}]: {string.Join(" ", data)}");
+            if (teleport)
+            {
+                switch (target)
+                {
+                    case 0:
+                        SceneLoader.CheckIfWeCanGoFromWorldToWorld(PortalUtils.lastEntryWorld, PortalUtils.lastEntryPortalID, null);
+                        break;
+                    case 1:
+                        SceneLoader.CheckIfWeCanGoFromWorldToWorld(PortalUtils.lastTargetWorld, PortalUtils.lastTargetPortalID, null);
+                        break;
+                }
+            }
         }
     }
         

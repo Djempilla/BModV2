@@ -7,6 +7,23 @@ namespace BModv2.Patches.Impl.Utils;
 
 public class PortalUtils
 {
+    
+    // plug for warping
+    public static string lastEntryPortalID;
+    public static string lastEntryWorld;
+    public static string lastTargetPortalID;
+    public static string lastTargetWorld;
+    
+    public static string[] classes = new string[]
+    {
+        "PortalData",
+        "PortalPasswordData",
+        "VortexPortalData",
+        "PortalFactionDarkData",
+        "PortalFactionLightData",
+        "AnniversaryPortalData"
+    };
+    
     public static IReadOnlyList<string>? GetPortalData(Vector2i pos)
     {
         try
@@ -38,7 +55,7 @@ public class PortalUtils
             // string dd = BSONUtils.Dump(asBSON);
             // Plugin.Log.LogInfo(dd);
             
-            if (asBSON["class"].stringValue != "PortalData")
+            if  (!classes.Contains(asBSON["class"].stringValue))
             {
                 // Plugin.Log.LogInfo($"[Portal] class = {asBSON["class"].stringValue}, not PortalData");
                 return new[] {"Not a portal -> " +  asBSON["class"].stringValue};
@@ -46,11 +63,16 @@ public class PortalUtils
 
             string itemBlockType = asBSON["blockType"].stringValue;
             string name = asBSON["name"].stringValue;
-            string entryWorld = "W: " + Constants.getWorld().worldName + " ";
+            string entryWorld = Constants.getWorld().worldName;
             string entryPoint = asBSON["entryPointID"].stringValue;
             string targetWorld = asBSON["targetWorldID"].stringValue;
             string targetEntryPoint = asBSON["targetEntryPointID"].stringValue;
             string isLocked = asBSON["isLocked"].stringValue;
+
+            lastEntryPortalID = entryPoint;
+            lastEntryWorld = entryWorld;
+            lastTargetPortalID = targetWorld;
+            lastTargetWorld = targetWorld;
 
             return new[]
             {
