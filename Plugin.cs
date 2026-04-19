@@ -1,13 +1,9 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
-using Il2CppInterop.Runtime.Injection;
 using UnityEngine;
-using BModv2.Patches.Impl.Hud;
-using Object = UnityEngine.Object;
 
 namespace BModv2;
 
@@ -26,7 +22,8 @@ public class Plugin : BasePlugin
         _harmony.PatchAll(Assembly.GetExecutingAssembly());
 
         ConfigData.vortexPortalActivateDistance = 0.0f;
-
+        // ControllerHelper.rootUI.RemoveWorldLighting();
+        ConfigData.playerChangeToSleepSeconds = int.MaxValue;
         Log.LogInfo("BModv2 loaded");
     }
 }

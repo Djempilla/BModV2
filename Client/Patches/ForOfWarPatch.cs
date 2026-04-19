@@ -17,7 +17,5 @@ public class FogOfWarPatch
     public static void Prefix(FogOfWar __instance, int x, int y, ref float opacityValue)
     {
         opacityValue = 0;
-        if (Camera.main != null)
-            Plugin.Log.LogInfo($"pos: {Camera.main.ScreenToWorldPoint(Input.mousePosition)}");
     }
 }

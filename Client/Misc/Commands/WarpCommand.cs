@@ -18,6 +18,9 @@ public class WarpCommand
                 Plugin.Log.LogInfo($"Warped at spawn");
                 return;
             }
+
+            Constants.getPlayer().doMoveAnimationFlag = true;
+            Constants.getPlayer().DoSitAnimation();
             Vector2i v = WorldUtils.ConvertWorldPointToMapPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
             Constants.thePlayer.WarpPlayer(v.x, v.y);
             Plugin.Log.LogInfo($"Warped at {v.x} {v.y}");

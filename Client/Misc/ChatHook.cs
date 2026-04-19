@@ -57,6 +57,31 @@ public static class PortalDataCtorPatch
             {
                 WarpCommand.Execute(true);
             }
+            
+            if (commandLine.StartsWith("fish"))
+            {
+                AutoFishCommand.Execute();
+            }
+
+            if (commandLine.StartsWith("test"))
+            {
+                testCommand.Execute();
+            }
+            
+            if (commandLine.StartsWith("parse"))
+            {
+                ParseCommand.Execute();
+            }
+            
+            if (commandLine.StartsWith("break"))
+            {
+                BreakerCommand.Execute();
+            }
+            
+            if (commandLine.StartsWith("place"))
+            {
+                PlaceCommand.Execute(World.BlockType.WoodenPlatform);
+            }
 
             return false;
         }
