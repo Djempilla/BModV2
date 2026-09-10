@@ -8,14 +8,18 @@ using UnityEngine;
 
 namespace BModv2.Farming;
 
-public class AutoBreak
+public class LEGACY_AutoBreak
 {
     public static bool isEnabled = false;
     // wooden platform by default
     public static int blockToFarm = 16;
+    public static string farmWorld = "";
+    public static bool breakBg = false;
     
     private static int ticksPassed = 0;
     private static float nextPlacementTime = 0f;
+
+    private static int reconnectDelay = 0;
 
     private enum Stage
     {
@@ -29,12 +33,27 @@ public class AutoBreak
     public static void onTick()
     {
         if (!isEnabled) return;
+        
+        if(farmWorld == "") return;
+        
+        if(PlayerUtils.IsPlayerJoiningWorld()) return;
+
+        if (PlayerUtils.IsPlayerInMenus() || !PlayerUtils.IsPlayerInWorld())
+        {
+            reconnectDelay++;
+            if (reconnectDelay < 120) return;
+            reconnectDelay = 0;
+            
+            SceneLoader.GoFromMainMenuToWorld(farmWorld, "farm");
+            return;
+        }
+        
 
         Vector2i myPos = Constants.getCurrentPlayerMapPoint();
         
         if (myPos.x == 40 && myPos.y == 30)
         {
-            isEnabled = false;
+            // if we are at spawnpoint, pausing macro while we won't move and trying wo warp into "farm portal"
             return;
         }
         
@@ -67,16 +86,7 @@ public class AutoBreak
                 return;
 
             case Stage.Placing:
-                if (!HasEnoughPlatforms())
-                {
-                    isEnabled = false;
-                    Plugin.Log?.LogInfo("Out of blocks. Disabling");
-                    return;
-                }
-
-                if (TryPlaceOneBlock(world, myPos))
-                    return;
-
+                TryPlaceOneBlock(world, myPos);
                 currentStage = Stage.Breaking;
                 return;
         }
@@ -92,11 +102,29 @@ public class AutoBreak
                 if (w == 0 && h == -1) continue;
 
                 Vector2i breakPos = new Vector2i(myPos.x + w, myPos.y + h);
-                World.BlockType blockType = world.GetBlockType(breakPos);
+                World.BlockType blockType;
+                if (breakBg)
+                {
+                    blockType = world.GetBlockBackgroundType(breakPos);
+                }
+                else
+                {
+                    blockType = world.GetBlockType(breakPos);
+                }
+                
 
                 if (blockType == World.BlockType.None) continue;
 
-                OutgoingMessages.SendHitBlockMessage(breakPos, DateTime.Now, false);
+                if (!breakBg)
+                {
+                    OutgoingMessages.SendHitBlockMessage(breakPos, DateTime.Now, false);
+                }
+                else
+                {
+                    OutgoingMessages.SendHitBlockBackgroundMessage(breakPos, DateTime.Now);
+                }
+                    
+                
                 return true;
             }
         }
@@ -128,8 +156,6 @@ public class AutoBreak
 
     private static bool TryPlaceOneBlock(World world, Vector2i myPos)
     {
-        if (Time.time < nextPlacementTime)
-            return true;
 
         for (int w = -1; w <= 1; w++)
         {
@@ -139,13 +165,28 @@ public class AutoBreak
                 if (w == 0 && h == -1) continue;
 
                 Vector2i placePos = new Vector2i(myPos.x + w, myPos.y + h);
-                World.BlockType blockType = world.GetBlockType(placePos);
+                World.BlockType blockType;
+                if (breakBg)
+                {
+                     blockType = world.GetBlockBackgroundType(placePos);
+                }
+                else
+                {
+                    blockType = world.GetBlockType(placePos);
+                }
+                
 
                 if (blockType != World.BlockType.None) continue;
 
-                PlayerUtils.PlaceBlock(placePos.x, placePos.y, (World.BlockType)blockToFarm);
-                nextPlacementTime = Time.time + 0.1f;
-                return true;
+                if (breakBg)
+                {
+                    Plugin.Log?.LogInfo($"Trying to place b at {placePos.x} {placePos.y} id: {blockType}");
+                    PlayerUtils.PlaceBackground(placePos.x, placePos.y, (World.BlockType)blockToFarm);
+                }
+                else
+                {
+                    PlayerUtils.PlaceBlock(placePos.x, placePos.y, (World.BlockType)blockToFarm);
+                }
             }
         }
 

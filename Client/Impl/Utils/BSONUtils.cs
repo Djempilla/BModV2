@@ -1,82 +1,79 @@
-namespace BModv2.Patches.Impl.Utils;
-
 using System;
-using System.Reflection;
-using System.Text;
 using Kernys.Bson;
+
+namespace BModv2.Patches.Impl.Utils;
 
 public static class BSONUtils
 {
-    public static string Dump(BSONObject obj)
+    public static void PrintBson(BSONObject packet)
     {
-        if (obj == null)
-            return "BSONObject: null";
+        if (packet == null || packet.mMap == null)
+            return;
 
-        var sb = new StringBuilder();
-
-        try
+        foreach (string key in packet.mMap.Keys)
         {
-            sb.AppendLine("=== BSONObject Dump ===");
-            sb.AppendLine($"Type: {obj.GetType().FullName}");
-            sb.AppendLine($"ToString(): {obj}");
-
-            Type t = obj.GetType();
-
-            sb.AppendLine("--- Properties ---");
-            foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            try
             {
-                object? value = null;
-                try
+                BSONValue value = packet[key];
+                if (value == null)
                 {
-                    if (p.GetIndexParameters().Length == 0)
-                        value = p.GetValue(obj);
-                    else
-                        value = "[indexed property]";
-                }
-                catch (Exception e)
-                {
-                    value = $"[error: {e.GetType().Name}]";
+                    Console.WriteLine($"{key} : null");
+                    continue;
                 }
 
-                sb.AppendLine($"{p.PropertyType.Name} {p.Name} = {SafeToString(value)}");
+                string valueStr = FormatBsonValue(value);
+                Console.WriteLine($"{key} : {valueStr}");
             }
-
-            sb.AppendLine("--- Fields ---");
-            foreach (var f in t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            catch (Exception ex)
             {
-                object? value = null;
-                try
-                {
-                    value = f.GetValue(obj);
-                }
-                catch (Exception e)
-                {
-                    value = $"[error: {e.GetType().Name}]";
-                }
-
-                sb.AppendLine($"{f.FieldType.Name} {f.Name} = {SafeToString(value)}");
+                Console.WriteLine($"{key} : <error: {ex.Message}>");
             }
         }
-        catch (Exception e)
-        {
-            sb.AppendLine($"Dump failed: {e}");
-        }
-
-        return sb.ToString();
     }
 
-    private static string SafeToString(object? value)
+    private static string FormatBsonValue(BSONValue value)
     {
-        if (value == null)
-            return "null";
-
         try
         {
-            return value.ToString() ?? "null";
+            switch (value.valueType)
+            {
+                case BSONValue.ValueType.String:
+                    return $"\"{value.stringValue}\"";
+
+                case BSONValue.ValueType.Int32:
+                    return value.int32Value.ToString();
+
+                case BSONValue.ValueType.Int64:
+                    return value.int64Value.ToString();
+
+                case BSONValue.ValueType.Double:
+                    return value.doubleValue.ToString();
+
+                case BSONValue.ValueType.Boolean:
+                    return value.boolValue.ToString();
+
+                case BSONValue.ValueType.Object:
+                    return "<nested object>";
+
+                case BSONValue.ValueType.Array:
+                    return "<array>";
+
+                case BSONValue.ValueType.Binary:
+                    return $"<binary, {value.binaryValue?.Length ?? 0} bytes>";
+
+                case BSONValue.ValueType.None:
+                    return "null";
+
+                case BSONValue.ValueType.UTCDateTime:
+                    return value.dateTimeValue.ToString("yyyy-MM-dd HH:mm:ss");
+
+                default:
+                    return $"<type: {value.valueType}>"; // показать неизвестный тип
+            }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return $"[ToString error: {e.GetType().Name}]";
+            return $"<error: {ex.Message}, type: {value?.valueType}>"; // показать тип и ошибку
         }
     }
 }

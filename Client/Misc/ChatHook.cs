@@ -1,7 +1,12 @@
 using HarmonyLib;
 using System;
+using BasicTypes;
+using BModv2.AutoFarms;
+using BModv2.Client.Misc.Commands;
 using BModv2.Patches.Impl;
+using BModv2.Patches.Impl.Utils;
 using BModv2.Patches.Misc.Commands;
+using UnityEngine;
 
 namespace BModv2.Patches.Misc;
 
@@ -48,6 +53,13 @@ public static class PortalDataCtorPatch
                 PositionCommand.Execute();
             }
 
+            if (commandLine.StartsWith("world"))
+            {
+                string[] line = commandLine.Split(" ");
+                if (line.Length != 2) return false;
+                WorldCommand.Execute(line[1]);
+            }
+            
             if (commandLine.StartsWith("warp"))
             {
                 WarpCommand.Execute(false);
@@ -75,14 +87,72 @@ public static class PortalDataCtorPatch
             
             if (commandLine.StartsWith("break"))
             {
-                BreakerCommand.Execute();
+                string[] line = commandLine.Split(" ");
+                if (line.Length < 2)
+                {
+                    AutoFarmCommand.Execute(false);    
+                } else if (line[1].Contains("bg"))
+                {
+                    AutoFarmCommand.Execute(true);
+                }
+            }
+            if (commandLine.StartsWith("reload"))
+            {
+                ReloadCommand.Execute();
             }
             
-            if (commandLine.StartsWith("place"))
+            // Modules toggles
+            
+            if (commandLine.StartsWith("fly"))
             {
-                PlaceCommand.Execute(World.BlockType.WoodenPlatform);
+                Constants.IsFlyEnabled = !Constants.IsFlyEnabled;
             }
 
+            if (commandLine.StartsWith("keyfly"))
+            {
+                Plugin.Log.LogInfo("KeyFly enabled");
+                Constants.IsKeyflyEnabled = !Constants.IsKeyflyEnabled;
+            }
+            if (commandLine.StartsWith("freecam"))
+            {
+                Constants.IsFreecamEnabled = !Constants.IsFreecamEnabled;
+            }
+
+            if (commandLine.StartsWith("inv"))
+            {
+                InventoryCommand.Execute();
+            }
+
+            if (commandLine.StartsWith("goto"))
+            {
+                Vector2i v = WorldUtils.ConvertWorldPointToMapPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                GotoCommand.Execute(v.x, v.y);
+            }
+            
+            if (commandLine.StartsWith("vortex"))
+            {
+                if (ConfigData.vortexPortalActivateDistance == 0.0f)
+                {
+                    ConfigData.vortexPortalActivateDistance = 1.0f;    
+                }
+                else
+                {
+                    ConfigData.vortexPortalActivateDistance = 0.0f;
+                }
+                
+            }
+
+            if (commandLine.StartsWith("forcelock"))
+            {
+                Constants.spamWorldLock = !Constants.spamWorldLock;
+                Plugin.Log.LogInfo($"Forcelock {Constants.spamWorldLock}");
+            }
+
+            if (commandLine.StartsWith("snipe"))
+            {
+                RandomWorlder.isEnabled =  !RandomWorlder.isEnabled;
+            }
+            
             return false;
         }
 

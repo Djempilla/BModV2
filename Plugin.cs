@@ -20,8 +20,7 @@ public class Plugin : BasePlugin
 
         _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
         _harmony.PatchAll(Assembly.GetExecutingAssembly());
-
-        ConfigData.vortexPortalActivateDistance = 0.0f;
+        
         // ControllerHelper.rootUI.RemoveWorldLighting();
         ConfigData.playerChangeToSleepSeconds = int.MaxValue;
         Log.LogInfo("BModv2 loaded");

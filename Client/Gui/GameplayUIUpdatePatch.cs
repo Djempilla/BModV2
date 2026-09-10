@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using BasicTypes;
+using BModv2.Patches.Impl;
 using BModv2.Patches.Impl.Hud;
 using BModv2.Patches.Impl.Utils;
 using HarmonyLib;
@@ -15,34 +16,8 @@ public static class GameplayUIUpdatePatch
     static void Postfix(GameplayUI __instance)
     {
         // 1) Движение камеры по стрелкам
+        if(!Constants.IsFreecamEnabled) return;
         MoveCameraWithArrows();
-
-        // 2) Твой существующий код HUD
-        Vector2i v = ControllerHelper.freeSpaceController.currentPlayerMapPoint;
-        IReadOnlyList<string>? data = PortalUtils.GetPortalData(v);
-
-        if (data == null || data.Count == 0)
-        {
-            HudState.Lines = null;
-            return;
-        }
-
-        Vector3 mouse = Input.mousePosition;
-
-        const float width = 320f;
-        float height = 16f + data.Count * 18f;
-
-        float x = mouse.x + 16f;
-        float y = Screen.height - mouse.y + 16f;
-
-        if (x + width > Screen.width)
-            x = Screen.width - width - 10f;
-
-        if (y + height > Screen.height)
-            y = Screen.height - height - 10f;
-
-        HudState.Rect = new Rect(x, y, width, height);
-        HudState.Lines = data;
     }
 
     private static void MoveCameraWithArrows()

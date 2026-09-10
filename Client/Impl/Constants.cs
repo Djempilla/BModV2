@@ -5,6 +5,14 @@ namespace BModv2.Patches.Impl;
 
 public static class Constants
 {
+    
+    // Modules toggles constants
+    public static bool IsFreecamEnabled = false;
+    public static bool IsKeyflyEnabled = false;
+    public static bool IsFlyEnabled = false;
+
+    public static bool spamWorldLock = false;
+    
     // HUGE TODO REPLACE WITH GETTERS ESPECIALLY FOR WORLD
     public static Player thePlayer =  ControllerHelper.worldController.player;
     public static World theWorld = ControllerHelper.worldController.world;
